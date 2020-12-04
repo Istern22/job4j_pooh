@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 public class Server {
 
-    public static ConcurrentLinkedQueue<String> queue = new ConcurrentLinkedQueue<>();
+    public static ConcurrentLinkedQueue queue = new ConcurrentLinkedQueue();
 
     public static void main(String[] args) {
         int size = Runtime.getRuntime().availableProcessors();
@@ -24,21 +24,15 @@ public class Server {
                 Socket socket = server.accept();
                 System.out.println("Client connected!");
                 PrintWriter out = new PrintWriter(socket.getOutputStream());
+                System.out.println("Out created!");
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                System.out.println("In created!");
                 service.execute(() -> {
                     try {
-                        String str;
-                        StringBuffer request = new StringBuffer();
-                        while ((str = in.readLine()) != null) {
-                            request.append(str);
-                        }
-                        System.out.println(request.toString());
-                        queue.add(parse(request.toString()));
-                        String respond = queue.poll();
-                        if (respond != null) {
-                            out.write(respond);
-                            out.flush();
-                        }
+                        String entry = in.readLine();
+                        System.out.println("READ from client message - " + entry);
+                        queue.add(entry);
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -47,10 +41,5 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static String parse(String request) {
-        String[] items = request.split(",");
-        return items[1].substring(8, items[1].length() - 1);
     }
 }
