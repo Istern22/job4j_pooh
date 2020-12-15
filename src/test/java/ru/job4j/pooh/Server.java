@@ -1,5 +1,7 @@
 package ru.job4j.pooh;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,17 +30,19 @@ public class Server {
                 service.execute(() -> {
                     try {
                         String str;
-                        StringBuffer request = new StringBuffer();
-                        while ((str = in.readLine()) != null) {
-                            request.append(str);
+                        StringBuffer buffer = new StringBuffer();
+                        while (!(str = in.readLine()).isEmpty()) {
+                            buffer.append(str).append(System.lineSeparator());
                         }
-                        System.out.println(request.toString());
-                        queue.add(parse(request.toString()));
+                        System.out.println("Вывод строки");
+                        System.out.println(buffer.toString());
+                        String message = parse(buffer.toString());
+                        System.out.println("Сообщение: " + message);
+                        queue.add(message);
+                        System.out.println("Добавлено в очередь");
                         String respond = queue.poll();
-                        if (respond != null) {
-                            out.write(respond);
-                            out.flush();
-                        }
+                        out.write(respond);
+                        System.out.println("Ответ " + respond + " отправлен");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -49,8 +53,8 @@ public class Server {
         }
     }
 
-    public static String parse(String request) {
-        String[] items = request.split(",");
-        return items[1].substring(8, items[1].length() - 1);
+    public static String parse(String str) {
+        String[] items = str.split("=");
+        return items[1].substring(0, items[1].indexOf(" "));
     }
 }
